@@ -34,14 +34,13 @@ try {
 	
 	# Upload to S3
 	my $s3cmd = "/home/ubuntu/bin/s3backup.pl '$backup_file_path' org.cloudcoder.backup";
-	print "s3cmd: $s3cmd\n";
-	exit 0;
+	#print "s3cmd: $s3cmd\n";
 	system($s3cmd)/256 == 0
 		|| die "s3backup.pl failed\n";
 } catch {
 	die "Error: $_\n";
 } finally {
-	#system("rm -f $backup_file_path");
+	system("rm -f '$backup_file_path'");
 };
 
 # vim:set ts=2:
