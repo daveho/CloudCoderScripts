@@ -8,6 +8,12 @@ use strict;
 use FileHandle;
 use Net::Amazon::S3;
 
+my $quiet = 0;
+if (scalar(@ARGV) > 0 && $ARGV[0] eq '-q') {
+	$quiet = 1;
+	shift @ARGV;
+}
+
 scalar(@ARGV) == 2 || Usage();
 
 my $local_file = shift @ARGV;
@@ -22,11 +28,18 @@ my $s3 = Net::Amazon::S3->new({
 });
 
 my $bucket = $s3->bucket($bucket_name);
-print "Transferring file $local_file to bucket $bucket_name...";
+print "Transferring file $local_file to bucket $bucket_name..." unless ($quiet);
 STDOUT->flush();
-$bucket->add_key_filename($local_file, $local_file, { content_type => 'application/octet-stream' })
+
+# Create a key name by stripping the directory part from the local filename
+my $key_name = $local_file;
+if ($local_file =~ m,^.*/([^/]+)$,) {
+	$key_name = $1;
+}
+
+$bucket->add_key_filename($key_name, $local_file, { content_type => 'application/octet-stream' })
 	|| die "Couldn't copy file to bucket: " . $s3->errstr . "\n";
-print "Done!\n";
+print "Done!\n" unless $quiet;
 exit 0;
 
 sub Usage {
