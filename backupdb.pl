@@ -33,7 +33,7 @@ try {
 	system($cmd)/256 == 0 || die "mysqldump failed\n";
 	
 	# Upload to S3
-	my $s3cmd = "/home/ubuntu/bin/s3backup.pl '$backup_file_path' org.cloudcoder.backup";
+	my $s3cmd = "/home/ubuntu/bin/s3backup.pl -q '$backup_file_path' org.cloudcoder.backup";
 	#print "s3cmd: $s3cmd\n";
 	system($s3cmd)/256 == 0
 		|| die "s3backup.pl failed\n";
