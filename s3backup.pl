@@ -46,6 +46,8 @@ sub ReadCredentials {
 	my $secret_key = <$credentials_fh>;
 	chomp $secret_key;
 
+	$credentials_fh->close();
+
 	die "Could not read access key\n" if (!defined $access_key);
 	die "Could not read secret key\n" if (!defined $secret_key);
 
