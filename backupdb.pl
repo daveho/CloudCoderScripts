@@ -4,6 +4,7 @@
 
 use strict;
 use FileHandle;
+use Try::Tiny;
 
 scalar(@ARGV) == 1 || die "Usage: $0 <database name>\n";
 my $dbname = shift @ARGV;
@@ -22,9 +23,25 @@ chomp $date;
 my $backup_filename = "$dbname-$date.sql.bz2";
 
 # Dump the database
-my $cmd = "mysqldump -u cloudcoder -p'$dbpasswd' '$dbname' | (bzip2 --best > $backup_filename)";
-print "cmd: $cmd\n";
-system($cmd)/256 == 0
-	|| die "mysqldump failed\n";
+my $backup_dir = "/home/ubuntu/backup";
+system("mkdir -p $backup_dir")/256 == 0 || die "Couldn't create backup directory\n";
+my $backup_file_path = "$backup_dir/$backup_filename";
+
+try {
+	my $cmd = "mysqldump -u cloudcoder -p'$dbpasswd' '$dbname' | (bzip2 --best > $backup_file_path)";
+	#print "cmd: $cmd\n";
+	system($cmd)/256 == 0 || die "mysqldump failed\n";
+	
+	# Upload to S3
+	my $s3cmd = "/home/ubuntu/bin/s3backup.pl '$backup_file_path' org.cloudcoder.backup";
+	print "s3cmd: $s3cmd\n";
+	exit 0;
+	system($s3cmd)/256 == 0
+		|| die "s3backup.pl failed\n";
+} catch {
+	die "Error: $_\n";
+} finally {
+	#system("rm -f $backup_file_path");
+};
 
 # vim:set ts=2:
