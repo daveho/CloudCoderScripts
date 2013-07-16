@@ -17,13 +17,13 @@ die "Couldn't read db password from $home/.ccdbpasswd\n" if (!defined $dbpasswd)
 chomp $dbpasswd;
 $dbpasswd_fh->close();
 
-my $date = `date +'%d-%m-%Y'`;
+my $date = `date +'%Y-%m-%d'`;
 chomp $date;
 
 my $backup_filename = "$dbname-$date.sql.bz2";
 
 # Dump the database
-my $backup_dir = "/home/ubuntu/backup";
+my $backup_dir = "$home/backup";
 system("mkdir -p $backup_dir")/256 == 0 || die "Couldn't create backup directory\n";
 my $backup_file_path = "$backup_dir/$backup_filename";
 
@@ -33,7 +33,7 @@ try {
 	system($cmd)/256 == 0 || die "mysqldump failed\n";
 	
 	# Upload to S3
-	my $s3cmd = "/home/ubuntu/bin/s3backup.pl -q '$backup_file_path' org.cloudcoder.backup";
+	my $s3cmd = "$home/bin/s3backup.pl -q '$backup_file_path' org.cloudcoder.backup";
 	#print "s3cmd: $s3cmd\n";
 	system($s3cmd)/256 == 0
 		|| die "s3backup.pl failed\n";
